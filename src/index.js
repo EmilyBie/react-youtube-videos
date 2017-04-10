@@ -1,13 +1,45 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import YoutobeSearch from 'youtube-api-search';
+import SearchBar from './components/search_bar';
+import VideoList from './components/video_list';
+import VideoDetail from './components/video_detail';
+import _ from 'lodash';
+import Config from '../config';
+const API_KEY = Config.API_KEY;
 
 class App extends React.Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      videos: [],
+      selectedVideo: null
+    };
+
+    this.videoSearch('surfboards');
+  }
+
+  videoSearch(term) {
+    YoutobeSearch({key: API_KEY, term: term}, (videos) => {
+      this.setState({
+        videos: videos,
+        selectedVideo: videos[0]
+      });
+    });
   }
 
   render() {
-    return <div>Hello there!</div>; 
+    const videoSearch = _.debounce((term) => {this.videoSearch(term)}, 300);
+    return (
+      <div>
+        <SearchBar onSearchTermChange={videoSearch}/>
+        <VideoDetail video={this.state.selectedVideo}/>
+        <VideoList 
+          clickVideoItem={selectedVideo => this.setState({selectedVideo})} 
+          videos={this.state.videos}/>
+      </div>
+    );
   }
 }
 
